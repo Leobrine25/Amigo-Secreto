@@ -1,0 +1,145 @@
+<div *ngIf="isLoading" class="loading-overlay">
+  <div class="spinner-border text-primary" role="status">
+    <span class="visually-hidden">Loading...</span>
+  </div>
+</div>
+<div class="m-4">
+  <h2>Amigo Secreto - Grupos</h2>
+  <div *ngIf="error" class="alert alert-danger mt-2">
+    {{ error }}
+  </div>
+
+  <div class="card">
+    <div class="card-header py-3">
+      <div class="input-group">
+        <input #NovoGrupo type="text" placeholder="Nome do grupo" class="form-control" maxlength="100" />
+        <button class="btn btn-primary" type="button" (click)="createGroup(NovoGrupo)">Criar Grupo</button>
+      </div>
+    </div>
+
+    <div class="card-body">
+      <div class="row">
+        <div class="col-md-5">
+          <div class="table-responsive">
+            <table class="table table-bordered table-striped-columns">
+              <thead>
+                <tr>
+                  <th class="tiny-th">ID</th>
+                  <th>Name</th>
+                  <th class="tiny-th">Detalhes</th>
+                  <th class="tiny-th">Deletar</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr *ngFor="let group of groups">
+                  <td>{{ group.id }}</td>
+                  <td class="truncate">{{ group.name_group }}</td>
+                  <td class="text-center">
+                    <button class="btn btn-sm btn-info" (click)="fetchGroupDetails(group.id)">
+                      <i class="bi bi-search"></i>
+                    </button>
+                  </td>
+                  <td class="text-center">
+                    <button class="btn btn-sm btn-danger" (click)="deleteGroup(group.id)">
+                      <i class="bi bi-trash"></i>
+                    </button>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+        <div class="col-md-7">
+          <div class="card" *ngIf="groupDetails">
+            <div class="pt-3 card-header bg-secondary text-white">
+              <h4>Informações do Grupo</h4>
+            </div>
+            <div class="card-body">
+              <ul class="list-group mb-3">
+                <li class="list-group-item">
+                  <strong>Nome do Grupo:</strong> {{ groupDetails.group.name_group }}
+                </li>
+              </ul>
+
+              <h5 class="card-title mt-4">Adicionar Participante</h5>
+              <div class="input-group mb-3">
+                <input type="text" class="form-control" placeholder="Digite o nome do participante"
+                  [(ngModel)]="userName" />
+                <button class="btn btn-success" [disabled]="!userName || isLoading"
+                  (click)="addParticipant(lastGroupFetch, userName)">
+                  Adicionar
+                </button>
+              </div>
+
+              <h5>Participantes</h5>
+              <div *ngIf="groupDetails.participants.length > 0; else noParticipants">
+                <table class="table table-bordered table-striped-columns">
+                  <thead>
+                    <tr>
+                      <th>Nome</th>
+                      <th class="tiny-th">Remover</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr *ngFor="let participant of groupDetails.participants">
+                      <td class="truncate">{{ participant.name }}</td>
+                      <td class="text-center">
+                        <button class="btn btn-sm btn-danger" (click)="RemoveUserGroup(lastGroupFetch,participant.id)">
+                          <i class="bi bi-trash"></i>
+                        </button>
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+
+              <div class="d-flex align-items-center">
+                <h5 class="me-3">Status do Sorteio</h5>
+                <div class="ms-auto">
+                  <button (click)="generateDraw(lastGroupFetch)" *ngIf="!groupDetails.sorteioOccurred"
+                    class="btn btn-primary">Sortear</button>
+                  <button (click)="generateDraw(lastGroupFetch)" *ngIf="groupDetails.sorteioOccurred"
+                    class="btn btn-danger">Sortear Novamente</button>
+                </div>
+              </div>
+              <ng-template #noParticipants>
+                <p class="text-muted">Nenhum participante.</p>
+              </ng-template>
+
+              <p>
+                <span class="badge" [ngClass]="{
+                    'text-bg-success': groupDetails.sorteioOccurred,
+                    'text-bg-danger': !groupDetails.sorteioOccurred
+                  }">
+                  {{ groupDetails.sorteioOccurred ? 'Sorteio realizado' : 'Sorteio não realizado' }}
+                </span>
+              </p>
+              <div *ngIf="groupDetails.sorteioOccurred">
+                <div class="table-responsive">
+                  <table class="table table-striped-columns">
+                    <thead>
+                      <tr>
+                        <th class="tiny-th">Revelar</th>
+                        <th>Amigo secreto</th>
+                        <th>Sorteado</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <tr *ngFor="let par of groupDetails.drawResults; let i = index">
+                        <td><button class="btn btn-info" (click)="toggleReceiverName(i)"><i
+                              class="bi bi-search"></i></button></td>
+                        <td>{{ par.gifter_name }}</td>
+                        <td *ngIf="isReceiverVisible(i)">{{ par.receiver_name }}</td>
+                        <td *ngIf="!isReceiverVisible(i)">Sorteado escondido</td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
